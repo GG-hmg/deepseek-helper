@@ -2,18 +2,25 @@
 
 const DEEPSEEK_API = "https://api.deepseek.com/chat/completions";
 
-// Relay: toggle command → active tab
+// ---- 唤醒方式 2: Chrome 快捷键命令 ----
 chrome.commands.onCommand.addListener((command, tab) => {
-  if (command === "toggle-dialog" && tab.id) {
+  if (command === "toggle-dialog" && tab?.id) {
     chrome.tabs.sendMessage(tab.id, { type: "TOGGLE" }).catch(() => {});
   }
 });
 
-// Relay: content script → DeepSeek API
+// ---- 唤醒方式 3: 点击扩展图标 ----
+chrome.action.onClicked.addListener((tab) => {
+  if (tab?.id) {
+    chrome.tabs.sendMessage(tab.id, { type: "TOGGLE" }).catch(() => {});
+  }
+});
+
+// ---- API 代理 ----
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "QUERY") {
     handleQuery(msg.payload).then(sendResponse).catch((e) => sendResponse({ error: e.message }));
-    return true; // async response
+    return true; // 保持异步通道
   }
 });
 

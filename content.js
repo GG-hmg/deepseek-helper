@@ -7,16 +7,29 @@
   let model = "deepseek-chat";
   let imageBase64 = null;
 
-  // Load config
-  chrome.storage.sync.get(["apiKey", "model"], (d) => {
-    apiKey = d.apiKey || "";
-    model = d.model || "deepseek-chat";
+  function initConfig() {
+    chrome.storage.sync.get(["apiKey", "model"], (d) => {
+      apiKey = d.apiKey || "";
+      model = d.model || "deepseek-chat";
+    });
+  }
+  initConfig();
+
+  // ---- 唤醒方式 1: 直接监听键盘 ----
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Q" && e.ctrlKey && e.shiftKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      toggle();
+    }
   });
 
-  // Listen for toggle command from background
+  // ---- 唤醒方式 2: background 命令转发 ----
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === "TOGGLE") toggle();
   });
+
+  // ---- 唤醒方式 3: 扩展图标 onClick 转发 ----
+  // (由 background 的 chrome.action.onClicked 触发)
 
   function toggle() {
     if (overlay) {
@@ -24,18 +37,13 @@
       overlay = null;
       return;
     }
-    loadConfig(() => {
-      overlay = createOverlay();
-      document.body.appendChild(overlay);
-      focusInput();
-    });
-  }
-
-  function loadConfig(cb) {
+    // 确保 apiKey 最新
     chrome.storage.sync.get(["apiKey", "model"], (d) => {
       apiKey = d.apiKey || "";
       model = d.model || "deepseek-chat";
-      cb();
+      overlay = createOverlay();
+      document.body.appendChild(overlay);
+      focusInput();
     });
   }
 
@@ -50,44 +58,52 @@
           <button id="ds-close" title="关闭">x</button>
         </div>
       </div>
-      <div class="ds-body"></div>
+      <div class="ds-body"><span style="color:#6c7086">输入问题或粘贴截图，Ctrl+Enter 发送</span></div>
       <div class="ds-key-box" style="display:none">
         <input type="password" placeholder="API Key (sk-...)" id="ds-key-input">
         <div class="ds-key-btns"><button id="ds-key-save">保存</button></div>
       </div>
       <div class="ds-input-area">
-        <textarea id="ds-input" rows="1" placeholder="输入问题... (Ctrl+Enter 发送, 可粘贴图片)"></textarea>
+        <textarea id="ds-input" rows="1" placeholder="输入问题... (Ctrl+Enter 发送, 可粘贴截图)"></textarea>
         <button id="ds-submit" title="发送">></button>
       </div>
       <div class="ds-footer">
-        <span>Ctrl+Shift+Q 呼出</span>
+        <span>Ctrl+Shift+Q 呼出/关闭</span>
         <span class="ds-paste-hint" id="ds-paste-img">粘贴截图</span>
         <span style="flex:1"></span>
       </div>`;
 
-    // Drag
+    // 拖动
     const header = el.querySelector(".ds-header");
     header.addEventListener("mousedown", (e) => {
       if (e.target.tagName === "BUTTON") return;
       const ox = e.clientX - el.offsetLeft;
       const oy = e.clientY - el.offsetTop;
-      const move = (ev) => { el.style.left = (ev.clientX - ox) + "px"; el.style.top = (ev.clientY - oy) + "px"; el.style.right = "auto"; el.style.bottom = "auto"; };
-      const up = () => { document.removeEventListener("mousemove", move); document.removeEventListener("mouseup", up); };
+      const move = (ev) => {
+        el.style.left = (ev.clientX - ox) + "px";
+        el.style.top = (ev.clientY - oy) + "px";
+        el.style.right = "auto";
+        el.style.bottom = "auto";
+      };
+      const up = () => {
+        document.removeEventListener("mousemove", move);
+        document.removeEventListener("mouseup", up);
+      };
       document.addEventListener("mousemove", move);
       document.addEventListener("mouseup", up);
     });
 
-    // Buttons
+    // 按钮
     el.querySelector("#ds-close").addEventListener("click", () => { el.remove(); overlay = null; });
     el.querySelector("#ds-mini").addEventListener("click", () => { el.classList.toggle("ds-mini"); });
 
-    // Submit
+    // 提交
     el.querySelector("#ds-submit").addEventListener("click", submit);
     el.querySelector("#ds-input").addEventListener("keydown", (e) => {
       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) submit();
     });
 
-    // Paste image hint
+    // 粘贴文字
     el.querySelector("#ds-paste-img").addEventListener("click", () => {
       navigator.clipboard.readText().then((t) => {
         el.querySelector("#ds-input").value = t;
@@ -95,26 +111,25 @@
       }).catch(() => {});
     });
 
-    // Clipboard paste (image)
+    // 粘贴图片
     el.addEventListener("paste", (e) => {
       const items = e.clipboardData?.items;
       if (!items) return;
       for (const item of items) {
         if (item.type.startsWith("image/")) {
           e.preventDefault();
-          const blob = item.getAsFile();
           const reader = new FileReader();
           reader.onload = () => {
             imageBase64 = reader.result.split(",")[1];
             showImgTag();
           };
-          reader.readAsDataURL(blob);
+          reader.readAsDataURL(item.getAsFile());
           return;
         }
       }
     });
 
-    // API key save
+    // 保存 API Key
     el.querySelector("#ds-key-save").addEventListener("click", () => {
       const val = el.querySelector("#ds-key-input").value.trim();
       if (!val) return;
@@ -125,7 +140,7 @@
       });
     });
 
-    // Re-fetch config after storage change
+    // 同步存储变更
     chrome.storage.onChanged.addListener((changes) => {
       if (changes.apiKey) apiKey = changes.apiKey.newValue || "";
       if (changes.model) model = changes.model.newValue || "deepseek-chat";
@@ -186,7 +201,7 @@
 
       if (resp.needKey || resp.invalidKey) {
         apiKey = "";
-        chrome.storage.sync.set({ apiKey: "" }, () => {});
+        chrome.storage.sync.set({ apiKey: "" });
         overlay.querySelector(".ds-key-box").style.display = "flex";
         overlay.querySelector("#ds-key-input").value = "";
         overlay.querySelector("#ds-key-input").focus();
