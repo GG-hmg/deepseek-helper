@@ -20,11 +20,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 async function handleQuery(payload) {
-  const { text, image, apiKey } = payload;
+  const { text, images, apiKey } = payload;
 
   if (!apiKey) return { needKey: true };
 
-  const messages = [{ role: "user", content: buildContent(text, image) }];
+  const messages = [{ role: "user", content: buildContent(text, images) }];
 
   const resp = await fetch(DEEPSEEK_API, {
     method: "POST",
@@ -50,12 +50,14 @@ async function handleQuery(payload) {
   return { result: content };
 }
 
-function buildContent(text, imageBase64) {
-  if (!imageBase64) return text || "";
-  return [
-    { type: "image_url", image_url: { url: `data:image/png;base64,${imageBase64}` } },
-    { type: "text", text: text || "请描述这张图片的内容" },
-  ];
+function buildContent(text, imgList) {
+  if (!imgList || imgList.length === 0) return text || "请描述这张图片的内容";
+  const parts = imgList.map((b64) => ({
+    type: "image_url",
+    image_url: { url: `data:image/png;base64,${b64}` },
+  }));
+  parts.push({ type: "text", text: text || "请描述这些图片的内容" });
+  return parts;
 }
 
 } catch(e) { console.error("[ds-helper bg]", e); }
