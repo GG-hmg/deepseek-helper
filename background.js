@@ -51,9 +51,13 @@ async function handleQuery(payload) {
 }
 
 function buildContent(text, imgList) {
-  // DeepSeek chat API 不接收 image_url，仅发文字
-  // 截图保留在浮窗 UI 中作为用户的视觉参考
-  return text || "";
+  if (!imgList || imgList.length === 0) return text || "请描述这张图片的内容";
+  const parts = imgList.map((b64) => ({
+    type: "image_url",
+    image_url: { url: `data:image/png;base64,${b64}` },
+  }));
+  parts.push({ type: "text", text: text || "请描述这些图片的内容" });
+  return parts;
 }
 
 } catch(e) { console.error("[ds-helper bg]", e); }
