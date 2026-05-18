@@ -1,124 +1,206 @@
+/* DeepSeek Helper — Noir Tech Aesthetic */
+
 #ds-helper-overlay {
+  --ds-bg: #1c1c22;
+  --ds-surface: #25252d;
+  --ds-border: #33333d;
+  --ds-text: #d4d4dc;
+  --ds-muted: #88889a;
+  --ds-accent: #c9a96e;
+  --ds-accent-glow: #e8d5a3;
+  --ds-green: #7eb8a0;
+  --ds-red: #d97777;
+  --ds-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ds-radius: 14px;
+  --ds-radius-sm: 8px;
+
   position: fixed;
   right: 20px;
   bottom: 20px;
-  width: 420px;
+  width: 440px;
   max-height: 80vh;
-  background: #1e1e2e;
-  border: 1px solid #45475a;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  background: var(--ds-bg);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.03),
+    0 12px 48px rgba(0,0,0,.5),
+    0 4px 12px rgba(0,0,0,.3);
   z-index: 2147483647;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--ds-font);
+  font-size: 13.5px;
+  color: var(--ds-text);
   display: flex;
   flex-direction: column;
-  color: #cdd6f4;
-  font-size: 14px;
   overflow: hidden;
+  animation: ds-fade-in .2s ease-out;
+  transition: opacity .15s ease, transform .15s ease;
 }
 
-#ds-helper-overlay.ds-mini { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; }
-#ds-helper-overlay.ds-mini .ds-body,
-#ds-helper-overlay.ds-mini .ds-input-area,
-#ds-helper-overlay.ds-mini .ds-footer { display: none; }
-#ds-helper-overlay.ds-mini .ds-header { padding: 10px 14px; cursor: pointer; border-radius: 50%; }
+@keyframes ds-fade-in {
+  from { opacity: 0; transform: translateY(12px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
 
+/* ---- minimized ---- */
+#ds-helper-overlay.ds-mini {
+  width: 44px; height: 44px; border-radius: 50%;
+  transition: width .2s ease, height .2s ease, border-radius .2s ease;
+}
+#ds-helper-overlay.ds-mini .ds-body,
+#ds-helper-overlay.ds-mini .ds-input-row,
+#ds-helper-overlay.ds-mini .ds-footer-bar,
+#ds-helper-overlay.ds-mini .ds-key-row { display: none; }
+#ds-helper-overlay.ds-mini .ds-header {
+  padding: 0; justify-content: center; cursor: pointer; height: 44px;
+}
+#ds-helper-overlay.ds-mini .ds-header span,
+#ds-helper-overlay.ds-mini .ds-header-actions { display: none; }
+#ds-helper-overlay.ds-mini .ds-header::after {
+  content: "✦"; font-size: 18px; color: var(--ds-accent);
+}
+
+/* ---- header ---- */
 .ds-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  background: #313244;
+  padding: 12px 16px;
   cursor: move;
   user-select: none;
   flex-shrink: 0;
+  border-bottom: 1px solid var(--ds-border);
+  position: relative;
 }
-.ds-header span { font-weight: 600; font-size: 15px; }
-.ds-header button {
-  background: none; border: none; color: #a6adc8; cursor: pointer;
-  font-size: 16px; padding: 2px 6px; border-radius: 4px;
+.ds-header::before {
+  content: "";
+  position: absolute; top: 0; left: 16px; right: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ds-accent), transparent);
+  opacity: .6;
 }
-.ds-header button:hover { background: #45475a; color: #fff; }
+.ds-header span {
+  font-weight: 600; font-size: 14px; letter-spacing: .01em;
+  color: #e8e8f0;
+}
+.ds-header-actions { display: flex; gap: 2px; }
+.ds-header-actions button {
+  background: none; border: none; color: var(--ds-muted);
+  cursor: pointer; font-size: 15px; padding: 4px 7px; border-radius: 6px;
+  line-height: 1; transition: color .15s, background .15s;
+}
+.ds-header-actions button:hover { background: var(--ds-surface); color: #fff; }
+.ds-header-actions .ds-btn-close:hover { color: var(--ds-red); }
 
+/* ---- body ---- */
 .ds-body {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 14px;
-  min-height: 60px;
-  max-height: 50vh;
+  padding: 14px 16px;
+  min-height: 52px;
+  max-height: 45vh;
+  line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
-  line-height: 1.6;
+  scroll-behavior: smooth;
 }
-.ds-body a { color: #89b4fa; }
-.ds-body code { background: #313244; padding: 1px 4px; border-radius: 3px; font-size: 13px; }
-.ds-body pre { background: #11111b; padding: 10px; border-radius: 6px; overflow-x: auto; }
-.ds-body pre code { background: none; padding: 0; }
-.ds-body.ds-loading { color: #a6adc8; font-style: italic; }
-.ds-body.ds-error { color: #f38ba8; }
+.ds-body:empty::after {
+  content: "输入问题或粘贴截图，Ctrl+Enter 发送";
+  color: var(--ds-muted); font-style: italic;
+}
+.ds-body.ds-loading {
+  color: var(--ds-accent); font-style: italic;
+  display: flex; align-items: center; gap: 8px;
+}
+.ds-body.ds-loading::before {
+  content: ""; width: 14px; height: 14px;
+  border: 2px solid var(--ds-border);
+  border-top-color: var(--ds-accent);
+  border-radius: 50%;
+  animation: ds-spin .7s linear infinite;
+}
+.ds-body.ds-error { color: var(--ds-red); }
 
-.ds-input-area {
-  display: flex;
-  gap: 6px;
-  padding: 10px 14px;
-  border-top: 1px solid #45475a;
-  align-items: flex-end;
+@keyframes ds-spin { to { transform: rotate(360deg); } }
+
+/* markdown-ish */
+.ds-body a { color: var(--ds-accent); }
+.ds-body code {
+  background: #2a2a36; padding: 2px 6px; border-radius: 4px;
+  font-size: 12.5px; font-family: "SF Mono", "Cascadia Code", "Fira Code", monospace;
+}
+.ds-body pre {
+  background: #111118; padding: 12px 14px; border-radius: var(--ds-radius-sm);
+  overflow-x: auto; margin: 6px 0;
+  border: 1px solid #2a2a36;
+}
+.ds-body pre code { background: none; padding: 0; font-size: 12px; }
+
+/* ---- key row ---- */
+.ds-key-row {
+  display: none; flex-direction: column; gap: 8px;
+  padding: 12px 16px; border-top: 1px solid var(--ds-border);
+  flex-shrink: 0; background: #191920;
+}
+.ds-key-row input {
+  background: var(--ds-surface); border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-sm); color: var(--ds-text);
+  padding: 8px 12px; font: inherit; outline: none;
+}
+.ds-key-row input:focus { border-color: var(--ds-accent); }
+.ds-key-row .ds-key-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.ds-key-row .ds-key-btns button {
+  background: var(--ds-accent); border: none; border-radius: var(--ds-radius-sm);
+  padding: 6px 16px; cursor: pointer; font-size: 13px; font-weight: 600;
+  color: #1c1c22; transition: background .15s;
+}
+.ds-key-row .ds-key-btns button:hover { background: var(--ds-accent-glow); }
+
+/* ---- input row ---- */
+.ds-input-row {
+  display: flex; gap: 8px; padding: 10px 16px 12px;
+  border-top: 1px solid var(--ds-border); align-items: flex-end; flex-shrink: 0;
+}
+.ds-input-row textarea {
+  flex: 1; resize: none; min-height: 38px; max-height: 120px;
+  background: var(--ds-surface); border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text); padding: 9px 12px;
+  font: inherit; outline: none; transition: border-color .15s;
+}
+.ds-input-row textarea:focus { border-color: var(--ds-accent); }
+.ds-input-row textarea::placeholder { color: #5a5a6e; }
+
+.ds-btn-send {
+  width: 38px; height: 38px; flex-shrink: 0;
+  background: var(--ds-accent); border: none; border-radius: 50%;
+  color: #1c1c22; font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, transform .15s, box-shadow .15s;
+}
+.ds-btn-send:hover { background: var(--ds-accent-glow); transform: scale(1.05); }
+.ds-btn-send:active { transform: scale(.95); }
+.ds-btn-send:disabled {
+  background: #3a3a48; color: #6a6a7a; cursor: not-allowed; transform: none;
+}
+
+/* ---- footer ---- */
+.ds-footer-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 4px 16px 10px; font-size: 11px; color: #5c5c72;
   flex-shrink: 0;
 }
-.ds-input-area textarea {
-  flex: 1;
-  resize: none;
-  min-height: 40px;
-  max-height: 120px;
-  background: #313244;
-  border: 1px solid #45475a;
-  border-radius: 8px;
-  color: #cdd6f4;
-  padding: 8px 10px;
-  font: inherit;
-  outline: none;
-}
-.ds-input-area textarea:focus { border-color: #89b4fa; }
-.ds-input-area button {
-  width: 40px; height: 40px;
-  background: #89b4fa;
-  border: none; border-radius: 8px;
-  color: #1e1e2e; font-size: 18px; cursor: pointer;
-  flex-shrink: 0;
-}
-.ds-input-area button:hover { background: #b4d0fb; }
-.ds-input-area button:disabled { background: #45475a; color: #6c7086; cursor: not-allowed; }
+.ds-footer-bar .ds-hint { cursor: pointer; color: var(--ds-accent); transition: color .15s; }
+.ds-footer-bar .ds-hint:hover { color: var(--ds-accent-glow); }
+.ds-footer-bar .ds-spacer { flex: 1; }
 
-.ds-footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 14px 8px;
-  font-size: 11px;
-  color: #6c7086;
-  flex-shrink: 0;
+.ds-img-badge {
+  background: var(--ds-green); color: #1c1c22; padding: 2px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 500;
+  display: flex; align-items: center; gap: 5px;
 }
-.ds-footer .ds-paste-hint { cursor: pointer; color: #89b4fa; }
-.ds-footer .ds-paste-hint:hover { text-decoration: underline; }
-.ds-footer .ds-img-tag {
-  background: #a6e3a1; color: #1e1e2e; padding: 2px 8px;
-  border-radius: 10px; font-size: 11px; display: flex; align-items: center; gap: 4px;
+.ds-img-badge button {
+  background: none; border: none; color: #1c1c22; cursor: pointer;
+  font-size: 14px; padding: 0; line-height: 1; opacity: .6;
 }
-.ds-footer .ds-img-tag button { background: none; border: none; color: #1e1e2e; cursor: pointer; font-size: 14px; padding: 0; line-height: 1; }
-
-/* API key prompt */
-.ds-key-box {
-  display: flex; flex-direction: column; gap: 8px;
-  padding: 12px 14px; border-top: 1px solid #45475a; flex-shrink: 0;
-}
-.ds-key-box input {
-  background: #313244; border: 1px solid #45475a; border-radius: 6px;
-  color: #cdd6f4; padding: 6px 10px; font: inherit; outline: none;
-}
-.ds-key-box input:focus { border-color: #f9e2af; }
-.ds-key-box .ds-key-btns { display: flex; gap: 6px; justify-content: flex-end; }
-.ds-key-box button {
-  background: #a6e3a1; border: none; border-radius: 6px;
-  padding: 5px 14px; cursor: pointer; font-size: 13px; color: #1e1e2e;
-}
-.ds-key-box button:hover { opacity: .85; }
+.ds-img-badge button:hover { opacity: 1; }

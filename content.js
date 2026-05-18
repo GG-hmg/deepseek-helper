@@ -53,24 +53,24 @@
     el.innerHTML = `
       <div class="ds-header">
         <span>DeepSeek Helper</span>
-        <div>
-          <button id="ds-mini" title="最小化">_</button>
-          <button id="ds-close" title="关闭">x</button>
+        <div class="ds-header-actions">
+          <button id="ds-mini" title="最小化">&minus;</button>
+          <button id="ds-close" class="ds-btn-close" title="关闭">&times;</button>
         </div>
       </div>
-      <div class="ds-body"><span style="color:#6c7086">输入问题或粘贴截图，Ctrl+Enter 发送</span></div>
-      <div class="ds-key-box" style="display:none">
+      <div class="ds-body"></div>
+      <div class="ds-key-row">
         <input type="password" placeholder="API Key (sk-...)" id="ds-key-input">
         <div class="ds-key-btns"><button id="ds-key-save">保存</button></div>
       </div>
-      <div class="ds-input-area">
+      <div class="ds-input-row">
         <textarea id="ds-input" rows="1" placeholder="输入问题... (Ctrl+Enter 发送, 可粘贴截图)"></textarea>
-        <button id="ds-submit" title="发送">></button>
+        <button id="ds-submit" class="ds-btn-send" title="发送">&nearr;</button>
       </div>
-      <div class="ds-footer">
-        <span>Ctrl+Shift+Q 呼出/关闭</span>
-        <span class="ds-paste-hint" id="ds-paste-img">粘贴截图</span>
-        <span style="flex:1"></span>
+      <div class="ds-footer-bar">
+        <span>Ctrl+Shift+Q 呼出</span>
+        <span class="ds-hint" id="ds-paste-img">粘贴截图</span>
+        <span class="ds-spacer"></span>
       </div>`;
 
     // 拖动
@@ -135,7 +135,7 @@
       if (!val) return;
       apiKey = val;
       chrome.storage.sync.set({ apiKey }, () => {
-        el.querySelector(".ds-key-box").style.display = "none";
+        el.querySelector(".ds-key-row").style.display = "none";
         focusInput();
       });
     });
@@ -151,11 +151,11 @@
 
   function showImgTag() {
     if (!overlay) return;
-    const footer = overlay.querySelector(".ds-footer");
-    let tag = footer.querySelector(".ds-img-tag");
+    const footer = overlay.querySelector(".ds-footer-bar");
+    let tag = footer.querySelector(".ds-img-badge");
     if (!tag) {
       tag = document.createElement("span");
-      tag.className = "ds-img-tag";
+      tag.className = "ds-img-badge";
       const btn = document.createElement("button");
       btn.textContent = "x";
       btn.addEventListener("click", () => { imageBase64 = null; tag.remove(); });
@@ -183,7 +183,7 @@
 
     if (!text && !imageBase64) return;
     if (!apiKey) {
-      overlay.querySelector(".ds-key-box").style.display = "flex";
+      overlay.querySelector(".ds-key-row").style.display = "flex";
       overlay.querySelector("#ds-key-input").focus();
       return;
     }
@@ -191,7 +191,7 @@
     btn.disabled = true;
     body.className = "ds-body ds-loading";
     body.textContent = "正在思考...";
-    overlay.querySelector(".ds-key-box").style.display = "none";
+    overlay.querySelector(".ds-key-row").style.display = "none";
 
     try {
       const resp = await chrome.runtime.sendMessage({
@@ -202,7 +202,7 @@
       if (resp.needKey || resp.invalidKey) {
         apiKey = "";
         chrome.storage.sync.set({ apiKey: "" });
-        overlay.querySelector(".ds-key-box").style.display = "flex";
+        overlay.querySelector(".ds-key-row").style.display = "flex";
         overlay.querySelector("#ds-key-input").value = "";
         overlay.querySelector("#ds-key-input").focus();
         body.textContent = "API Key 无效，请重新输入";
@@ -215,7 +215,7 @@
         body.className = "ds-body";
         input.value = "";
         imageBase64 = null;
-        const tag = overlay.querySelector(".ds-img-tag");
+        const tag = overlay.querySelector(".ds-img-badge");
         if (tag) tag.remove();
       }
     } catch (e) {
