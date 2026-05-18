@@ -63,7 +63,7 @@
         <div class="ds-key-btns"><button id="ds-key-save">保存</button></div>
       </div>
       <div class="ds-input-row">
-        <textarea id="ds-input" rows="1" placeholder="输入问题... (Ctrl+Enter 发送, 可多次粘贴截图)"></textarea>
+        <textarea id="ds-input" rows="1" placeholder="输入问题... (贴图仅参考，需配合文字)"></textarea>
         <button id="ds-submit" class="ds-btn-send" title="发送">&nearr;</button>
       </div>
       <div class="ds-footer-bar">
@@ -223,6 +223,11 @@
     const text = input.value.trim();
 
     if (!text && images.length === 0) return;
+    if (!text && images.length > 0) {
+      body.className = "ds-body ds-error";
+      body.textContent = "当前模型不支持视觉识别，请用文字描述截图内容后发送";
+      return;
+    }
     if (!apiKey) {
       overlay.querySelector(".ds-key-row").style.display = "flex";
       overlay.querySelector("#ds-key-input").focus();
