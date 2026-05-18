@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepSeek Helper 设置</title>
+<style>
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    max-width: 500px; margin: 40px auto; padding: 0 20px;
+    background: #1e1e2e; color: #cdd6f4;
+  }
+  h2 { margin-top: 0; }
+  label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+  input, select {
+    width: 100%; padding: 8px 10px; border-radius: 6px;
+    background: #313244; border: 1px solid #45475a; color: #cdd6f4;
+    font: inherit; outline: none; box-sizing: border-box;
+  }
+  input:focus, select:focus { border-color: #89b4fa; }
+  .field { margin-bottom: 16px; }
+  .hint { font-size: 12px; color: #6c7086; margin-top: 4px; }
+  .hint a { color: #89b4fa; }
+  button {
+    background: #89b4fa; border: none; padding: 8px 20px;
+    border-radius: 6px; color: #1e1e2e; font-weight: 600; cursor: pointer;
+  }
+  button:hover { background: #b4d0fb; }
+  .status { margin-left: 12px; font-size: 13px; }
+  .status.ok { color: #a6e3a1; }
+  .status.err { color: #f38ba8; }
+</style>
+</head>
+<body>
+<h2>DeepSeek Helper 设置</h2>
+
+<div class="field">
+  <label for="api-key">API Key</label>
+  <input type="password" id="api-key" placeholder="sk-..." autocomplete="off">
+  <div class="hint">在 <a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com/api_keys</a> 获取</div>
+</div>
+
+<div class="field">
+  <label for="model">模型</label>
+  <select id="model">
+    <option value="deepseek-chat">deepseek-chat (推荐)</option>
+    <option value="deepseek-reasoner">deepseek-reasoner (深度思考)</option>
+  </select>
+</div>
+
+<div class="field">
+  <label>快捷键</label>
+  <div class="hint">前往 <a href="chrome://extensions/shortcuts" id="shortcuts-link">chrome://extensions/shortcuts</a> 修改 (Ctrl+Shift+Q 为默认)</div>
+</div>
+
+<button id="save">保存</button>
+<span class="status" id="status"></span>
+
+<script src="options.js"></script>
+</body>
+</html>

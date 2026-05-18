@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "DeepSeek Helper",
+  "version": "0.1.0",
+  "description": "通用 AI 问答助手，Ctrl+Shift+Q 唤醒浮窗，支持文字和截图提问",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "clipboardRead"
+  ],
+  "host_permissions": [
+    "https://api.deepseek.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "options_page": "options.html",
+  "commands": {
+    "toggle-dialog": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Q"
+      },
+      "description": "显示/隐藏 DeepSeek 问答浮窗"
+    }
+  }
+}
