@@ -1,17 +1,12 @@
 // DeepSeek Helper — Background Service Worker
 
+try {
+
 const DEEPSEEK_API = "https://api.deepseek.com/chat/completions";
 
-// ---- 唤醒方式 2: Chrome 快捷键命令 ----
+// ---- 唤醒方式: Chrome 快捷键命令 ----
 chrome.commands.onCommand.addListener((command, tab) => {
   if (command === "toggle-dialog" && tab?.id) {
-    chrome.tabs.sendMessage(tab.id, { type: "TOGGLE" }).catch(() => {});
-  }
-});
-
-// ---- 唤醒方式 3: 点击扩展图标 ----
-chrome.action.onClicked.addListener((tab) => {
-  if (tab?.id) {
     chrome.tabs.sendMessage(tab.id, { type: "TOGGLE" }).catch(() => {});
   }
 });
@@ -20,7 +15,7 @@ chrome.action.onClicked.addListener((tab) => {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "QUERY") {
     handleQuery(msg.payload).then(sendResponse).catch((e) => sendResponse({ error: e.message }));
-    return true; // 保持异步通道
+    return true;
   }
 });
 
@@ -62,3 +57,5 @@ function buildContent(text, imageBase64) {
     { type: "text", text: text || "请描述这张图片的内容" },
   ];
 }
+
+} catch(e) { console.error("[ds-helper bg]", e); }

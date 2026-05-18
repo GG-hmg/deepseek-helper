@@ -15,10 +15,13 @@
   }
   initConfig();
 
+  console.log("[ds-helper] content script loaded on", location.href);
+
   // ---- 唤醒方式 1: 直接监听键盘 ----
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Q" && e.ctrlKey && e.shiftKey && !e.metaKey && !e.altKey) {
+    if (e.code === "KeyQ" && e.ctrlKey && e.shiftKey && !e.altKey) {
       e.preventDefault();
+      e.stopPropagation();
       toggle();
     }
   });
