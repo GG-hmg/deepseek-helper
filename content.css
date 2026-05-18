@@ -204,3 +204,6 @@
   font-size: 14px; padding: 0; line-height: 1; opacity: .6;
 }
 .ds-img-badge button:hover { opacity: 1; }
+
+.ds-img-preview { animation: ds-fade-in .15s ease-out; }
+.ds-img-preview button:hover { background: rgba(255,0,0,.7) !important; }

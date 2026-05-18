@@ -155,19 +155,57 @@
   function showImgTag() {
     if (!overlay) return;
     const footer = overlay.querySelector(".ds-footer-bar");
+    const body = overlay.querySelector(".ds-body");
+
+    // 缩略图预览到 body
+    let preview = body.querySelector(".ds-img-preview");
+    if (!preview) {
+      preview = document.createElement("div");
+      preview.className = "ds-img-preview";
+      preview.style.cssText = "margin-bottom:8px;position:relative;display:inline-block;";
+      const img = document.createElement("img");
+      img.style.cssText = "max-width:100%;max-height:160px;border-radius:8px;border:1px solid #33333d;display:block;";
+      img.src = "data:image/png;base64," + imageBase64;
+      const rm = document.createElement("button");
+      rm.textContent = "x";
+      rm.style.cssText = "position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:12px;line-height:1;";
+      rm.addEventListener("click", () => { imageBase64 = null; preview.remove(); removeBadge(); });
+      preview.appendChild(img);
+      preview.appendChild(rm);
+      body.prepend(preview);
+    } else {
+      preview.querySelector("img").src = "data:image/png;base64," + imageBase64;
+    }
+
+    // footer 小标签
+    ensureBadge();
+  }
+
+  function ensureBadge() {
+    if (!overlay) return;
+    const footer = overlay.querySelector(".ds-footer-bar");
     let tag = footer.querySelector(".ds-img-badge");
     if (!tag) {
       tag = document.createElement("span");
       tag.className = "ds-img-badge";
       const btn = document.createElement("button");
       btn.textContent = "x";
-      btn.addEventListener("click", () => { imageBase64 = null; tag.remove(); });
+      btn.addEventListener("click", () => { imageBase64 = null; removeImgPreview(); tag.remove(); });
       tag.appendChild(btn);
-      tag.appendChild(document.createTextNode(" 已粘贴截图"));
-      footer.querySelector("span:last-child").before(tag);
-    } else {
-      tag.querySelector("button").nextSibling.textContent = " 已粘贴截图";
+      tag.appendChild(document.createTextNode(" 截图"));
+      footer.querySelector(".ds-spacer").before(tag);
     }
+  }
+
+  function removeBadge() {
+    const badge = overlay?.querySelector(".ds-img-badge");
+    if (badge) badge.remove();
+  }
+
+  function removeImgPreview() {
+    const prev = overlay?.querySelector(".ds-img-preview");
+    if (prev) prev.remove();
+    removeBadge();
   }
 
   function focusInput() {
@@ -218,8 +256,8 @@
         body.className = "ds-body";
         input.value = "";
         imageBase64 = null;
-        const tag = overlay.querySelector(".ds-img-badge");
-        if (tag) tag.remove();
+        removeImgPreview();
+        removeBadge();
       }
     } catch (e) {
       body.textContent = "请求失败: " + e.message;
